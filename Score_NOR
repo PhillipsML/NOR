@@ -1,0 +1,55 @@
+function InteractiveObjectIDandScore
+% 
+% Traindir = dir('*rain*.avi');
+% 
+% Trainmov = VideoReader(Traindir(1).name);
+Testmov = VideoReader('video.avi');
+
+% figure(1)
+% imshow(readFrame(Trainmov));
+
+figure(2)
+imshow(readFrame(Testmov));
+
+h = imrect(gca,[10 10 205 155])
+New_position = wait(h)
+NP = [round(New_position(1)), round(New_position(2));round(New_position(1))+205,...
+    round(New_position(2))+155];
+
+g = imrect(gca,[10 10 205 155])
+Old_position = wait(g)
+OP = [round(Old_position(1)), round(Old_position(2));round(Old_position(1))+205,...
+    round(Old_position(2))+155];
+
+load('scores_OSniff.mat');
+load('trx.mat')
+
+n_x = NP(1,1)<trx.x&trx.x<NP(2,1);
+n_y = NP(1,2)<trx.y&trx.y<NP(2,2);
+n_ip = n_x.*n_y;
+
+o_x = OP(1,1)<trx.x&trx.x<OP(2,1);
+o_y = OP(1,2)<trx.y&trx.y<OP(2,2);
+o_ip = o_x.*o_y;
+
+yes_sniff = allScores.scores{1,1}>0;
+
+
+SniffNewTime = n_ip.*yes_sniff;
+SniffOldTime = o_ip.*yes_sniff;
+
+SNa = diff(SniffNewTime);
+SOa = diff(SniffOldTime);
+
+SNb = SNa==1;
+SOb = SOa==1;
+
+SniffNewBouts = sum(SNb);
+SniffOldBouts = sum(SOb);
+
+sum(SniffNewTime)/sum(SniffOldTime)
+sum(SniffNewBouts)/sum(SniffOldBouts)
+
+
+save('DescriminationScores_1','SniffNewTime','SniffOldTime','SniffNewBouts',...
+    'SniffOldBouts','n_ip','o_ip');
